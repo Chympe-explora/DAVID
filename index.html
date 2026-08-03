@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krem Chympe Adventure & Camping</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel for in-browser JSX compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Firebase SDKs (Compat version for single HTML file) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        glass: "rgba(255, 255, 255, 0.05)",
+                        glassDark: "rgba(10, 24, 16, 0.4)",
+                        neon: "#c6ff6a",
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            background: #000 url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2584&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            -webkit-font-smoothing: antialiased;
+        }
+        /* Apple-level Premium Glassmorphism */
+        .glass-panel {
+            background: rgba(15, 30, 20, 0.35);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+            border-radius: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .glass-panel:hover {
+            border: 1px solid rgba(198, 255, 106, 0.3);
+            box-shadow: 0 8px 40px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .glass-input {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            color: white;
+            padding: 0.75rem 1rem;
+            width: 100%;
+            outline: none;
+            transition: border 0.3s ease;
+        }
+        .glass-input:focus {
+            border-color: #c6ff6a;
+        }
+        .neon-btn {
+            background: #c6ff6a;
+            color: #08140c;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .neon-btn:hover:not(:disabled) {
+            background: #aae048;
+            box-shadow: 0 0 15px rgba(198, 255, 106, 0.5);
+            transform: translateY(-2px);
+        }
+        .neon-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #555;
+            color: #999;
+            box-shadow: none;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+        
+        .fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Spinner */
+        .loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #000; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- FIREBASE INITIALIZATION ---
+        // Replace the "YOUR_..." placeholders with your Firebase console details for Storage to work.
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://chympe-order-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+        const storage = firebase.storage();
+
+        const { useState, useEffect, useRef } = React;
+
+        // --- ICONS (SVG) ---
+        const IconCheck = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+        const IconUser = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
+        const IconClock = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>;
+        const IconStar = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>;
+        const IconShield = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>;
+        const IconMenu = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>;
+
+        // --- PRICING DATA ---
+        const PRICING = {
+            guide: 1500,
+            camping: 2000,
+            vehicleRainy: 2000,
+            vehicleWinter: 4000,
+            rafting: 1000,
+            lifeJacket: 100,
+            parking: 100,
+            entry: 50,
+            advTrek: 1500,
+            campExp: 3500
+        };
+
+        const INITIAL_BOOKING_STATE = {
+            package: '',
+            name: '', whatsapp: '', email: '', date: '', people: 1,
+            guide: true, 
+            vehicle: 'none', 
+            campingEnabled: false,
+            camping: { tent: 0, torch: 0, blanket: 0, sleepingBag: 0, campfire: 0 },
+            meals: {
+                veg: { rice: 0, dal: 0, maggie: 0, tea: 0, salad: 0 },
+                nonVeg: { chicken: 0, egg: 0, fish: 0, pork: 0 }
+            },
+            activities: { cave: false, waterfall: false, swimming: false, photography: false, rafting: false },
+            facilities: { guide: true, helmet: false, parking: false, lifeJacket: false, safety: false, firstAid: false }
+        };
+
+        // --- MAIN APP COMPONENT ---
+        const App = () => {
+            const [view, setView] = useState('page1'); 
+            const [booking, setBooking] = useState(INITIAL_BOOKING_STATE);
+            const [finalBookingId, setFinalBookingId] = useState("");
+            const [adminTaps, setAdminTaps] = useState(0);
+
+            // Secret Admin Trigger
+            const handleLogoClick = () => {
+                setAdminTaps(prev => prev + 1);
+                setTimeout(() => setAdminTaps(0), 3000); 
+                if (adminTaps === 6) {
+                    const pass = prompt("Enter Admin Password:");
+                    if (pass === "admin123") setView('admin');
+                }
+            };
+
+            const Header = () => (
+                <header className="sticky top-0 z-50 p-4 bg-black/30 backdrop-blur-md border-b border-white/10 flex justify-between items-center">
+                    <div className="flex items-center gap-2 cursor-pointer select-none" onClick={handleLogoClick}>
+                        <div className="w-10 h-10 rounded-full bg-cover bg-center" style={{backgroundImage: "url('1000172992.jpg')"}}></div>
+                        <div>
+                            <h1 className="font-bold tracking-widest text-lg leading-tight">KREM CHYMPE</h1>
+                            <p className="text-[10px] tracking-widest text-gray-400">ADVENTURE & CAMPING</p>
+                        </div>
+                    </div>
+                    <nav className="hidden md:flex glass-panel rounded-full px-6 py-2 gap-6 text-sm font-medium">
+                        <button onClick={() => setView('page1')} className="hover:text-neon transition">Home</button>
+                        <button className="hover:text-neon transition">Explore</button>
+                        <button onClick={() => setView('page2')} className="hover:text-neon transition">Packages</button>
+                        <button className="hover:text-neon transition">Gallery</button>
+                        <button className="hover:text-neon transition">Booking</button>
+                        <button className="hover:text-neon transition">Contact</button>
+                    </nav>
+                    <button className="md:hidden text-white"><IconMenu /></button>
+                </header>
+            );
+
+            const calculateTotals = () => {
+                let total = booking.people * (booking.package === 'camping' ? PRICING.campExp : PRICING.advTrek);
+                if (booking.guide) total += PRICING.guide;
+                if (booking.campingEnabled) total += PRICING.camping;
+                if (booking.vehicle === 'rainy') total += PRICING.vehicleRainy;
+                if (booking.vehicle === 'winter') total += PRICING.vehicleWinter;
+                if (booking.facilities.parking) total += PRICING.parking;
+                if (booking.facilities.lifeJacket) total += (PRICING.lifeJacket * booking.people);
+                if (booking.activities.rafting) total += PRICING.rafting;
+                
+                const sumObj = (obj) => Object.values(obj).reduce((a,b) => a + b, 0);
+                total += sumObj(booking.meals.veg) * 150;
+                total += sumObj(booking.meals.nonVeg) * 250;
+                total += sumObj(booking.camping) * 500; 
+                
+                return total;
+            };
+
+            // --- VIEW: PAGE 1 (HOME) ---
+            if (view === 'page1') return (
+                <div className="min-h-screen fade-in pb-20">
+                    <Header />
+                    <main className="max-w-7xl mx-auto px-4 pt-12 flex flex-col lg:flex-row gap-12 items-center">
+                        <div className="flex-1 space-y-6">
+                            <h2 className="text-5xl md:text-7xl font-bold leading-tight">Discover Meghalaya's Hidden Paradise</h2>
+                            <p className="text-lg text-gray-300 max-w-lg">Explore mystical caves, breathtaking waterfalls, and thrilling adventures.</p>
+                            <button className="neon-btn text-lg" disabled>Book Now</button>
+                        </div>
+                        
+                        <div className="w-full lg:w-1/3 glass-panel p-6 space-y-6">
+                            <div className="flex items-center gap-4">
+                                <IconUser /><div><p className="text-sm text-gray-400">Visitors</p><p className="font-semibold">1 - 5 People</p></div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <IconClock /><div><p className="text-sm text-gray-400">Duration</p><p className="font-semibold">2 Hours Trek</p></div>
+                            </div>
+                            <div className="border-t border-white/10 pt-4">
+                                <p className="text-sm text-gray-400">Price Starts From</p>
+                                <p className="text-4xl font-bold text-neon">₹1500<span className="text-sm text-white font-normal"> / Person</span></p>
+                            </div>
+                            <button onClick={() => setView('page2')} className="w-full neon-btn">Book Now</button>
+                        </div>
+                    </main>
+
+                    <div className="max-w-7xl mx-auto px-4 mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="glass-panel p-6 flex items-center justify-between">
+                            <div><p className="text-sm text-gray-400">Trusted by</p><p className="text-xl font-bold">1000+ Travelers</p></div>
+                            <div className="flex -space-x-2">
+                                {[1,2,3,4].map(i => <div key={i} className="w-8 h-8 rounded-full border border-black bg-gray-600 bg-cover" style={{backgroundImage: `url(https://i.pravatar.cc/100?img=${i})`}}></div>)}
+                            </div>
+                        </div>
+                        <div className="glass-panel p-6 flex items-center gap-4">
+                            <div className="text-3xl">G</div>
+                            <div><p className="text-sm text-gray-400">Google Rating</p><div className="flex items-center gap-2"><p className="text-xl font-bold">4.9</p><div className="flex text-yellow-400"><IconStar/><IconStar/><IconStar/><IconStar/><IconStar/></div></div></div>
+                        </div>
+                        <div className="glass-panel p-6 flex items-center gap-4">
+                            <IconShield />
+                            <div><p className="text-sm text-gray-400">Safety Certified</p><p className="font-bold">First Aid & Equipment</p></div>
+                        </div>
+                    </div>
+
+                    <div className="fixed bottom-0 left-0 w-full p-4 bg-black/80 backdrop-blur-lg flex justify-between z-40 border-t border-white/10">
+                        <button className="px-6 py-2 rounded-lg bg-white/5 text-gray-500 cursor-not-allowed">Back</button>
+                        <button onClick={() => setView('page2')} className="neon-btn">Next</button>
+                    </div>
+                </div>
+            );
+
+            // --- VIEW: PAGE 2 (PACKAGES & GALLERY) ---
+            if (view === 'page2') return (
+                <div className="min-h-screen fade-in pb-24">
+                    <Header />
+                    <div className="max-w-7xl mx-auto px-4 py-12">
+                        <div className="text-center mb-12">
+                            <h2 className="text-4xl font-bold">Our Adventure Packages</h2>
+                            <p className="text-gray-400 mt-2">Choose your perfect adventure</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                            <div className="glass-panel p-6 flex flex-col">
+                                <div className="h-48 rounded-xl bg-cover bg-center mb-6" style={{backgroundImage: "url('https://images.unsplash.com/photo-1574870111867-089730e5a72b?q=80&w=800&auto=format&fit=crop')"}}></div>
+                                <h3 className="text-2xl font-bold">Adventure Trek</h3>
+                                <p className="text-neon text-3xl font-bold mt-2 mb-6">₹1500<span className="text-sm text-white font-normal"> / Person</span></p>
+                                <ul className="space-y-2 mb-8 flex-1">
+                                    {['Local Guide', 'Safety Equipment', 'Cave Exploration', 'Waterfall Visit'].map(f => (
+                                        <li key={f} className="flex items-center gap-2"><IconCheck /> {f}</li>
+                                    ))}
+                                </ul>
+                                <button onClick={() => { setBooking({...booking, package: 'adventure'}); setView('booking'); }} className="w-full neon-btn">Book Now</button>
+                            </div>
+                            <div className="glass-panel p-6 flex flex-col">
+                                <div className="h-48 rounded-xl bg-cover bg-center mb-6" style={{backgroundImage: "url('1000172999.jpg')"}}></div>
+                                <h3 className="text-2xl font-bold">Camping Experience</h3>
+                                <p className="text-neon text-3xl font-bold mt-2 mb-6">₹3500<span className="text-sm text-white font-normal"> / Person</span></p>
+                                <ul className="space-y-2 mb-8 flex-1">
+                                    {['Tent Stay', 'Dinner', 'Breakfast', 'Bonfire'].map(f => (
+                                        <li key={f} className="flex items-center gap-2"><IconCheck /> {f}</li>
+                                    ))}
+                                </ul>
+                                <button onClick={() => { setBooking({...booking, package: 'camping', campingEnabled: true}); setView('booking'); }} className="w-full neon-btn">Book Now</button>
+                            </div>
+                        </div>
+
+                        <div className="mt-20 text-center">
+                            <h2 className="text-4xl font-bold">Our Gallery</h2>
+                            <p className="text-gray-400 mt-2 mb-8">Moments from Krem Chympe</p>
+                            <div className="flex flex-wrap justify-center gap-4 mb-8">
+                                {['All', 'Cave', 'Waterfall', 'Camping', 'Trek', 'Drone'].map((cat, i) => (
+                                    <button key={cat} className={`px-6 py-2 rounded-full border ${i === 0 ? 'bg-neon text-black border-neon' : 'border-white/20 hover:bg-white/10'}`}>{cat}</button>
+                                ))}
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+                                {[
+                                    'https://images.unsplash.com/photo-1518709268805-4e9042af9f23',
+                                    'https://images.unsplash.com/photo-1433086966358-54859d0ed716',
+                                    'https://images.unsplash.com/photo-1504280390224-4d876bc29ba3',
+                                    'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d',
+                                    'https://images.unsplash.com/photo-1542332213-31f87348057f',
+                                    'https://images.unsplash.com/photo-1533587851505-d119e131517f'
+                                ].map((img, i) => (
+                                    <div key={i} className="aspect-square rounded-xl bg-cover bg-center border border-white/10" style={{backgroundImage: `url('${img}?q=80&w=400&auto=format&fit=crop')`}}></div>
+                                ))}
+                            </div>
+                            <button onClick={() => window.open('https://instagram.com', '_blank')} className="mt-8 px-8 py-3 rounded-full border border-white/20 hover:bg-white/10 transition inline-flex items-center gap-2">View All Photos <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></button>
+                        </div>
+                    </div>
+                    <div className="fixed bottom-0 left-0 w-full p-4 bg-black/80 backdrop-blur-lg flex justify-between z-40 border-t border-white/10">
+                        <button onClick={() => setView('page1')} className="px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition">Back</button>
+                    </div>
+                </div>
+            );
+
+            // --- VIEW: BOOKING FORM ---
+            if (view === 'booking') {
+                const Counter = ({ label, value, onChange }) => (
+                    <div className="flex items-center justify-between bg-black/20 p-3 rounded-lg border border-white/5">
+                        <span>{label}</span>
+                        <div className="flex items-center gap-4">
+                            <button type="button" onClick={() => onChange(Math.max(0, value - 1))} className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">-</button>
+                            <span className="w-4 text-center">{value}</span>
+                            <button type="button" onClick={() => onChange(value + 1)} className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">+</button>
+                        </div>
+                    </div>
+                );
+
+                return (
+                    <div className="min-h-screen fade-in pb-24">
+                        <Header />
+                        <div className="max-w-3xl mx-auto px-4 py-8">
+                            <h2 className="text-3xl font-bold mb-8">{booking.package === 'camping' ? 'Camping Experience Booking' : 'Adventure Trek Booking'}</h2>
+                            
+                            <form className="glass-panel p-6 space-y-6" onSubmit={(e) => { e.preventDefault(); setView('summary'); }}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div><label className="block text-sm text-gray-400 mb-2">Full Name</label><input required type="text" className="glass-input" value={booking.name} onChange={e => setBooking({...booking, name: e.target.value})} /></div>
+                                    <div><label className="block text-sm text-gray-400 mb-2">WhatsApp Number</label><input required type="tel" className="glass-input" value={booking.whatsapp} onChange={e => setBooking({...booking, whatsapp: e.target.value})} /></div>
+                                    <div><label className="block text-sm text-gray-400 mb-2">Email</label><input required type="email" className="glass-input" value={booking.email} onChange={e => setBooking({...booking, email: e.target.value})} /></div>
+                                    <div><label className="block text-sm text-gray-400 mb-2">Date</label><input required type="date" className="glass-input" value={booking.date} onChange={e => setBooking({...booking, date: e.target.value})} /></div>
+                                </div>
+
+                                <Counter label="Number of People" value={booking.people} onChange={v => setBooking({...booking, people: Math.max(1, v)})} />
+
+                                <div className="space-y-4 pt-4 border-t border-white/10">
+                                    <h3 className="text-xl font-bold">Transport & Guide</h3>
+                                    <div className="flex items-center justify-between p-4 bg-black/20 rounded-lg border border-white/5">
+                                        <span>Guide (Mandatory)</span>
+                                        <span className="text-neon font-bold">₹1500</span>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-2">4x4 Vehicle (Optional)</label>
+                                        <select className="glass-input" value={booking.vehicle} onChange={e => setBooking({...booking, vehicle: e.target.value})}>
+                                            <option value="none" className="text-black">No Vehicle</option>
+                                            <option value="rainy" className="text-black">Rainy (Half Way) - ₹2000</option>
+                                            <option value="winter" className="text-black">Winter (Full Way) - ₹4000</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 pt-4 border-t border-white/10">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-xl font-bold">Camping Required?</h3>
+                                        <div className="flex gap-2">
+                                            <button type="button" onClick={() => setBooking({...booking, campingEnabled: true})} className={`px-4 py-1 rounded-full ${booking.campingEnabled ? 'bg-neon text-black' : 'border border-white/20'}`}>Yes</button>
+                                            <button type="button" onClick={() => setBooking({...booking, campingEnabled: false})} className={`px-4 py-1 rounded-full ${!booking.campingEnabled ? 'bg-white text-black' : 'border border-white/20'}`}>No</button>
+                                        </div>
+                                    </div>
+                                    {booking.campingEnabled && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-white/10 rounded-xl bg-black/10">
+                                            {Object.keys(booking.camping).map(k => (
+                                                <Counter key={k} label={k.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} value={booking.camping[k]} onChange={v => setBooking({...booking, camping: {...booking.camping, [k]: v}})} />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="space-y-4 pt-4 border-t border-white/10">
+                                    <h3 className="text-xl font-bold">Meals</h3>
+                                    <details className="border border-white/10 rounded-xl group">
+                                        <summary className="p-4 font-semibold cursor-pointer outline-none bg-black/20 rounded-xl">Veg Menu</summary>
+                                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {Object.keys(booking.meals.veg).map(k => (
+                                                <Counter key={k} label={k.charAt(0).toUpperCase() + k.slice(1)} value={booking.meals.veg[k]} onChange={v => setBooking({...booking, meals: {...booking.meals, veg: {...booking.meals.veg, [k]: v}}})} />
+                                            ))}
+                                        </div>
+                                    </details>
+                                    <details className="border border-white/10 rounded-xl group">
+                                        <summary className="p-4 font-semibold cursor-pointer outline-none bg-black/20 rounded-xl">Non-Veg Menu</summary>
+                                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {Object.keys(booking.meals.nonVeg).map(k => (
+                                                <Counter key={k} label={k.charAt(0).toUpperCase() + k.slice(1)} value={booking.meals.nonVeg[k]} onChange={v => setBooking({...booking, meals: {...booking.meals, nonVeg: {...booking.meals.nonVeg, [k]: v}}})} />
+                                            ))}
+                                        </div>
+                                    </details>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-white/10">
+                                    <div>
+                                        <h3 className="text-xl font-bold mb-4">Activities</h3>
+                                        {Object.keys(booking.activities).map(k => (
+                                            <label key={k} className="flex items-center gap-3 mb-3 cursor-pointer">
+                                                <input type="checkbox" checked={booking.activities[k]} onChange={e => setBooking({...booking, activities: {...booking.activities, [k]: e.target.checked}})} className="w-5 h-5 accent-neon" />
+                                                <span className="capitalize">{k.replace(/([A-Z])/g, ' $1')}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold mb-4">Facilities</h3>
+                                        {Object.keys(booking.facilities).map(k => (
+                                            <label key={k} className="flex items-center gap-3 mb-3 cursor-pointer">
+                                                <input type="checkbox" disabled={k==='guide'} checked={booking.facilities[k]} onChange={e => setBooking({...booking, facilities: {...booking.facilities, [k]: e.target.checked}})} className="w-5 h-5 accent-neon" />
+                                                <span className="capitalize">{k.replace(/([A-Z])/g, ' $1')}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="fixed bottom-0 left-0 w-full p-4 bg-black/80 backdrop-blur-lg flex justify-between z-40 border-t border-white/10">
+                                    <button type="button" onClick={() => setView('page2')} className="px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition">Back</button>
+                                    <button type="submit" className="neon-btn">Next: Summary</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                );
+            }
+
+            // --- VIEW: SUMMARY & PRICING ---
+            if (view === 'summary') {
+                const total = calculateTotals();
+                return (
+                    <div className="min-h-screen fade-in pb-24">
+                        <Header />
+                        <div className="max-w-4xl mx-auto px-4 py-12">
+                            <div className="text-center mb-12">
+                                <h2 className="text-4xl font-bold">Pricing & Facilities</h2>
+                                <p className="text-gray-400 mt-2">Transparent pricing. No hidden costs.</p>
+                            </div>
+                            
+                            <div className="glass-panel p-8" style={{backgroundImage: "url('1000172988.png')", backgroundSize: 'cover', backgroundBlendMode: 'overlay', backgroundColor: 'rgba(15, 30, 20, 0.85)'}}>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-4 text-sm text-gray-400 border-b border-white/10 pb-2">
+                                        <span className="col-span-2">Item</span>
+                                        <span className="text-right">Price</span>
+                                        <span className="text-right">Subtotal</span>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-4 items-center">
+                                        <span className="col-span-2">{booking.package === 'camping' ? 'Camping Experience' : 'Adventure Trek'} (x{booking.people})</span>
+                                        <span className="text-right">₹{booking.package === 'camping' ? PRICING.campExp : PRICING.advTrek}</span>
+                                        <span className="text-right font-bold">₹{booking.people * (booking.package === 'camping' ? PRICING.campExp : PRICING.advTrek)}</span>
+                                    </div>
+                                    
+                                    {booking.guide && (
+                                        <div className="grid grid-cols-4 items-center">
+                                            <span className="col-span-2">Guide (Per Group)</span>
+                                            <span className="text-right">₹{PRICING.guide}</span>
+                                            <span className="text-right font-bold">₹{PRICING.guide}</span>
+                                        </div>
+                                    )}
+
+                                    {booking.vehicle !== 'none' && (
+                                        <div className="grid grid-cols-4 items-center">
+                                            <span className="col-span-2">4x4 Vehicle ({booking.vehicle})</span>
+                                            <span className="text-right">₹{booking.vehicle === 'rainy' ? PRICING.vehicleRainy : PRICING.vehicleWinter}</span>
+                                            <span className="text-right font-bold">₹{booking.vehicle === 'rainy' ? PRICING.vehicleRainy : PRICING.vehicleWinter}</span>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="mt-8 pt-6 border-t border-white/20 flex justify-between items-center">
+                                        <span className="text-2xl">Grand Total</span>
+                                        <span className="text-4xl font-bold text-neon">₹{total}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="fixed bottom-0 left-0 w-full p-4 bg-black/80 backdrop-blur-lg flex justify-between z-40 border-t border-white/10">
+                            <button onClick={() => setView('booking')} className="px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition">Back</button>
+                            <button onClick={() => setView('payment')} className="neon-btn">Proceed to Payment</button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // --- VIEW: PAYMENT (FIREBASE INTEGRATION) ---
+            if (view === 'payment') {
+                const total = calculateTotals();
+                const [advance, setAdvance] = useState(total);
+                const [receiptPreview, setReceiptPreview] = useState(null);
+                const [receiptFile, setReceiptFile] = useState(null);
+                const [isSubmitting, setIsSubmitting] = useState(false);
+
+                const handleSubmit = async () => {
+                    if (advance < 500) return alert("Minimum advance is ₹500");
+                    if (!receiptFile) return alert("Please upload a payment receipt");
+
+                    setIsSubmitting(true);
+                    
+                    try {
+                        let receiptUrl = "";
+                        // If Firebase Config is fully set, attempt upload
+                        if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+                            const receiptRef = storage.ref(`receipts/${Date.now()}_${receiptFile.name}`);
+                            await receiptRef.put(receiptFile);
+                            receiptUrl = await receiptRef.getDownloadURL();
+                        } else {
+                            console.warn("Storage API key missing, skipping actual image upload. Saving DB data only.");
+                            receiptUrl = "LOCAL_MOCK_URL";
+                        }
+
+                        // Generate ID and Save to Realtime Database
+                        const bookingId = "KRM-" + Math.floor(Math.random()*10000);
+                        const bookingData = {
+                            id: bookingId,
+                            ...booking,
+                            total: total,
+                            advance: advance,
+                            remaining: total - advance,
+                            receiptUrl: receiptUrl,
+                            status: "Pending",
+                            timestamp: firebase.database.ServerValue.TIMESTAMP
+                        };
+
+                        await db.ref('bookings/' + bookingId).set(bookingData);
+
+                        // Redirect to WhatsApp
+                        const text = encodeURIComponent(`*New Booking Request*\nBooking ID: ${bookingId}\nName: ${booking.name}\nPhone: ${booking.whatsapp}\nDate: ${booking.date}\nPeople: ${booking.people}\nPackage: ${booking.package}\n----------------------\nGrand Total: ₹${total}\nAdvance Paid: ₹${advance}\nRemaining: ₹${total - advance}`);
+                        window.open(`https://wa.me/916001877518?text=${text}`, '_blank');
+                        
+                        setFinalBookingId(bookingId);
+                        setView('confirmation');
+                    } catch (error) {
+                        console.error("Firebase Error:", error);
+                        alert("Error securing booking to database. Make sure Firebase config is correct.");
+                    } finally {
+                        setIsSubmitting(false);
+                    }
+                };
+
+                return (
+                    <div className="min-h-screen fade-in pb-24">
+                        <Header />
+                        <div className="max-w-4xl mx-auto px-4 py-12">
+                            <h2 className="text-3xl font-bold text-center mb-8">Secure Payment</h2>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="glass-panel p-6 space-y-6">
+                                    <h3 className="text-xl font-bold border-b border-white/10 pb-2">Payment Details</h3>
+                                    <div className="flex flex-col items-center bg-white p-4 rounded-xl">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=6001877518@upi&pn=KremChympe&cu=INR" alt="QR Code" className="w-48 h-48" />
+                                        <button className="mt-4 text-black font-bold text-sm underline">Download QR</button>
+                                    </div>
+                                    <div className="bg-black/20 p-4 rounded-lg border border-white/5">
+                                        <p className="text-sm text-gray-400">UPI ID</p>
+                                        <div className="flex justify-between items-center mt-1">
+                                            <span className="font-mono tracking-wider">6001877518@upi</span>
+                                            <button className="text-neon text-sm" onClick={() => navigator.clipboard.writeText("6001877518@upi")}>Copy</button>
+                                        </div>
+                                    </div>
+                                    <div className="bg-black/20 p-4 rounded-lg border border-white/5 space-y-2">
+                                        <p className="text-sm text-gray-400 border-b border-white/5 pb-2">Bank Transfer</p>
+                                        <div className="flex justify-between"><span className="text-gray-400 text-sm">A/C Holder:</span><span>David Tariang</span></div>
+                                        <div className="flex justify-between"><span className="text-gray-400 text-sm">A/C Number:</span><span className="font-mono">123456789012</span></div>
+                                        <div className="flex justify-between"><span className="text-gray-400 text-sm">IFSC:</span><span className="font-mono">SBIN0001234</span></div>
+                                    </div>
+                                </div>
+
+                                <div className="glass-panel p-6 space-y-6 flex flex-col justify-between">
+                                    <div>
+                                        <h3 className="text-xl font-bold border-b border-white/10 pb-2 mb-6">Confirm Payment</h3>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm text-gray-400 mb-2">Advance Amount Paying Now (Min ₹500)</label>
+                                                <div className="relative">
+                                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">₹</span>
+                                                    <input type="number" min="500" max={total} className="glass-input pl-8 text-xl font-bold text-neon" value={advance} onChange={e => setAdvance(e.target.value)} disabled={isSubmitting} />
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-400">Remaining Balance:</span>
+                                                <span className="font-bold">₹{total - advance}</span>
+                                            </div>
+
+                                            <div className="mt-6 pt-6 border-t border-white/10">
+                                                <label className="block text-sm text-gray-400 mb-2">Upload Payment Receipt</label>
+                                                {!receiptPreview ? (
+                                                    <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/20 rounded-xl hover:border-neon transition bg-black/20 ${isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>
+                                                        <span className="text-sm text-gray-400">Click to upload screenshot</span>
+                                                        <input type="file" className="hidden" accept="image/*" disabled={isSubmitting} onChange={(e) => {
+                                                            setReceiptFile(e.target.files[0]);
+                                                            setReceiptPreview(URL.createObjectURL(e.target.files[0]));
+                                                        }} />
+                                                    </label>
+                                                ) : (
+                                                    <div className="relative h-32 rounded-xl bg-cover bg-center border border-white/20" style={{backgroundImage: `url(${receiptPreview})`}}>
+                                                        {!isSubmitting && <button onClick={() => { setReceiptFile(null); setReceiptPreview(null); }} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded">X</button>}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="fixed bottom-0 left-0 w-full p-4 bg-black/80 backdrop-blur-lg flex justify-between z-40 border-t border-white/10">
+                            <button onClick={() => setView('summary')} className="px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition" disabled={isSubmitting}>Back</button>
+                            <button onClick={handleSubmit} className="neon-btn" disabled={isSubmitting}>
+                                {isSubmitting ? <><div className="loader"></div> Submitting...</> : "Submit & Open WhatsApp"}
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // --- VIEW: CONFIRMATION ---
+            if (view === 'confirmation') return (
+                <div className="min-h-screen fade-in flex items-center justify-center p-4">
+                    <div className="glass-panel p-8 max-w-md w-full text-center space-y-6">
+                        <div className="w-20 h-20 bg-neon rounded-full flex items-center justify-center mx-auto text-black mb-4">
+                            <IconCheck />
+                        </div>
+                        <h2 className="text-3xl font-bold">Booking Confirmed!</h2>
+                        <p className="text-gray-400">Your Booking ID: <span className="font-mono text-white">{finalBookingId}</span></p>
+                        <p className="text-sm text-gray-400">We have securely saved your booking in our database. Our team will verify your payment and finalize details.</p>
+                        <div className="pt-6 flex flex-col gap-4">
+                            <button className="neon-btn w-full">Download PDF Ticket</button>
+                            <button onClick={() => { setBooking(INITIAL_BOOKING_STATE); setView('page1'); }} className="px-6 py-3 rounded-lg border border-white/20 hover:bg-white/10 transition w-full">Return Home</button>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            // --- VIEW: SECRET ADMIN DASHBOARD (CONNECTED TO DB) ---
+            if (view === 'admin') {
+                const [adminBookings, setAdminBookings] = useState([]);
+                
+                // Fetch live data from Database
+                useEffect(() => {
+                    const bookingsRef = db.ref('bookings');
+                    bookingsRef.on('value', (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                            const bookingsArray = Object.values(data).sort((a,b) => b.timestamp - a.timestamp);
+                            setAdminBookings(bookingsArray);
+                        }
+                    });
+                    return () => bookingsRef.off();
+                }, []);
+
+                const totalRevenue = adminBookings.reduce((sum, item) => sum + item.total, 0);
+                const pendingCount = adminBookings.filter(b => b.status === "Pending").length;
+
+                return (
+                    <div className="min-h-screen bg-black text-white fade-in">
+                        <header className="p-4 border-b border-white/10 flex justify-between items-center bg-gray-900">
+                            <h1 className="text-xl font-bold text-neon">KREM CHYMPE ADMIN</h1>
+                            <button onClick={() => setView('page1')} className="text-sm px-4 py-2 bg-red-500/20 text-red-500 rounded hover:bg-red-500/40">Logout</button>
+                        </header>
+                        <div className="flex">
+                            <nav className="w-64 border-r border-white/10 min-h-[calc(100vh-65px)] p-4 space-y-2 bg-gray-900/50">
+                                {['Dashboard', 'Bookings', 'Packages', 'Prices', 'Gallery', 'Settings'].map((i, index) => (
+                                    <button key={i} className={`w-full text-left px-4 py-2 rounded hover:bg-white/10 ${index === 0 && 'bg-white/10 text-neon'}`}>{i}</button>
+                                ))}
+                            </nav>
+                            <main className="flex-1 p-8">
+                                <h2 className="text-3xl font-bold mb-8">Dashboard Overview</h2>
+                                <div className="grid grid-cols-4 gap-6 mb-8">
+                                    <div className="bg-gray-800 p-6 rounded-xl border border-white/5">
+                                        <p className="text-gray-400">Total Bookings</p><p className="text-3xl font-bold">{adminBookings.length}</p>
+                                    </div>
+                                    <div className="bg-gray-800 p-6 rounded-xl border border-white/5">
+                                        <p className="text-gray-400">Revenue (INR)</p><p className="text-3xl font-bold text-neon">₹{totalRevenue.toLocaleString('en-IN')}</p>
+                                    </div>
+                                    <div className="bg-gray-800 p-6 rounded-xl border border-white/5">
+                                        <p className="text-gray-400">Pending Approvals</p><p className="text-3xl font-bold text-yellow-500">{pendingCount}</p>
+                                    </div>
+                                </div>
+                                <h3 className="text-xl font-bold mb-4">Live Bookings Database</h3>
+                                <div className="bg-gray-800 rounded-xl overflow-hidden border border-white/5">
+                                    <table className="w-full text-left text-sm">
+                                        <thead className="bg-gray-900 text-gray-400">
+                                            <tr><th className="p-4">ID</th><th className="p-4">Name</th><th className="p-4">Date</th><th className="p-4">Total</th><th className="p-4">Status</th><th className="p-4">Action</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            {adminBookings.length === 0 && (
+                                                <tr><td colSpan="6" className="p-4 text-center text-gray-500">No bookings found in database.</td></tr>
+                                            )}
+                                            {adminBookings.map(b => (
+                                                <tr key={b.id} className="border-t border-white/5">
+                                                    <td className="p-4 font-mono">{b.id}</td>
+                                                    <td className="p-4">{b.name}</td>
+                                                    <td className="p-4">{b.date}</td>
+                                                    <td className="p-4">₹{b.total}</td>
+                                                    <td className="p-4"><span className={`px-2 py-1 rounded text-xs ${b.status==='Pending'?'bg-yellow-500/20 text-yellow-500':'bg-neon/20 text-neon'}`}>{b.status}</span></td>
+                                                    <td className="p-4 flex gap-3">
+                                                        {b.receiptUrl !== "LOCAL_MOCK_URL" && <a href={b.receiptUrl} target="_blank" className="text-blue-400 hover:underline">Receipt</a>}
+                                                        <button className="text-neon hover:underline">Approve</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </main>
+                        </div>
+                    </div>
+                );
+            }
+
+            return null;
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
