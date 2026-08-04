@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Krem Chympe — Adventure &amp; Camping</title>
+
+  <!--
+    IMAGES: edit the file names below to match whatever you upload into the
+    "images" folder next to this page. Every image on the site is listed
+    here — nothing else in the code needs to change.
+
+    - This site comes with a starter set of images already in the "images"
+      folder (same photos it had before), so it works right out of the box.
+    - To swap a photo: upload your new file into "images" and change the
+      matching line below to its file name (or a full https:// URL).
+    - guide / logo are not included yet — add your own "images/guide.jpg"
+      and "images/logo.png" (or point them at different file names).
+  -->
+  <script>
+    window.KC_IMAGES = {
+      // Rotating homepage background photos
+      heroBg1: "images/hero-bg-1.jpg",
+      heroBg2: "images/hero-bg-2.jpg",
+
+      // Section photos
+      heroCave:    "images/hero-cave.jpg",
+      trekCard:    "images/trek-card.jpg",
+      campingCard: "images/camping-card.jpg",
+
+      // Guide photo and site logo (add your own files for these)
+      guide: "images/guide.jpg",
+      logo:  "images/logo.png",
+
+      // Gallery photos (id 0-9, matches the categories shown on the site)
+      gallery0: "images/gallery-0-cave.jpg",
+      gallery1: "images/gallery-1-waterfall.jpg",
+      gallery2: "images/gallery-2-trek.jpg",
+      gallery3: "images/gallery-3-camping.jpg",
+      gallery4: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=400",
+      gallery5: "images/gallery-5-cave.jpg",
+      gallery6: "images/gallery-6-waterfall.jpg",
+      gallery7: "images/gallery-7-cave.jpg",
+      gallery8: "images/gallery-8-trek.jpg",
+      gallery9: "images/gallery-9-camping.jpg",
+
+      // Your UPI payment QR code image (shown on the Pricing / Pay page).
+      // Leave blank ("") to keep the plain text placeholder instead.
+      qrCode: ""
+    };
+  </script>
+
+  <!--
+    CONTENT: every word of text, price, and label used on the site lives
+    here. Change anything below and it updates on the site immediately —
+    no other file needs to be touched.
+  -->
+  <script>
+    window.KC_CONTENT = {
+      // ---- Site identity ----
+      siteName: "KREM CHYMPE",
+      siteSub: "ADVENTURE & CAMPING",
+
+      // ---- Contact & payment details ----
+      instagram: "https://instagram.com/kremchympe",
+      whatsappNumber: "916001877518",
+      upiId: "kremchympe@upi",
+      bank: {
+        name: "Krem Chympe Adventure",
+        account: "123456789012",
+        ifsc: "SBIN0001234",
+        bankName: "SBI, Cherrapunji Branch"
+      },
+
+      // ---- Prices (in ₹) ----
+      prices: {
+        trek: 1500,          // shown as the "starting from" trek price
+        camping: 3500,       // shown as the "starting from" camping price
+        guide: 1500,         // mandatory guide fee, charged on every booking
+        campingBase: 2000,   // reserved, not currently charged
+        vehicleRainy: 2000,  // 4x4 vehicle - Rainy Half Way option
+        vehicleWinter: 4000, // 4x4 vehicle - Winter Full Way option
+        boat: 1000,          // reserved, not currently charged
+        jacket: 100,         // reserved, not currently charged
+        parking: 100,        // charged once per booking
+        entry: 50             // charged per person
+      },
+
+      // ---- Meal options (shown with a quantity picker) ----
+      meals: [
+        { id: "bamboo_pork",  name: "Bamboo Pork",   price: 300, type: "non-veg" },
+        { id: "chicken_curry",name: "Chicken Curry", price: 250, type: "non-veg" },
+        { id: "maggie",       name: "Maggie",         price: 80, type: "veg" },
+        { id: "tea",          name: "Red Tea",        price: 30, type: "veg" },
+        { id: "rice",         name: "Steamed Rice",  price: 120, type: "veg" },
+        { id: "salad",        name: "Local Salad",    price: 60, type: "veg" },
+        { id: "pork_fry",     name: "Pork Fry",      price: 320, type: "non-veg" },
+        { id: "egg_curry",    name: "Egg Curry",     price: 150, type: "non-veg" }
+      ],
+
+      // ---- Camping gear options (shown only for Camping bookings) ----
+      campingItems: [
+        { id: "tent",    name: "Tent (2 Person)",    price: 500 },
+        { id: "torch",   name: "Torch + Batteries",   price: 50 },
+        { id: "blanket", name: "Sleeping Blanket",   price: 100 },
+        { id: "mat",     name: "Sleeping Mat",        price: 50 }
+      ],
+
+      // ---- Homepage hero text ----
+      hero: {
+        title: "Discover Meghalaya's Hidden Paradise",
+        sub: "Embark on an unforgettable journey through Krem Chympe, one of India's longest cave systems nestled in the heart of Meghalaya's mystical forests.",
+        visitorsLabel: "Visitors",
+        duration: "2 Hours Trek",
+        priceLabel: "Starts ₹1500 Per Person"
+      },
+
+      // Homepage rotating background photos (file names come from KC_IMAGES above)
+      backgrounds: [window.KC_IMAGES.heroBg1, window.KC_IMAGES.heroBg2],
+
+      // ---- Guide bio ----
+      guide: {
+        name: "David Tariang",
+        role: "Lead Guide & Conservationist",
+        bio: "Born in the valleys of Cherrapunji, David has explored Krem Chympe since childhood. 10+ years guiding, certified caver.",
+        image: window.KC_IMAGES.guide
+      },
+
+      logoImage: window.KC_IMAGES.logo,
+
+      // Section photos (file names come from KC_IMAGES above)
+      sectionImages: {
+        heroCave: window.KC_IMAGES.heroCave,
+        trekCard: window.KC_IMAGES.trekCard,
+        campingCard: window.KC_IMAGES.campingCard
+      },
+
+      // ---- Gallery: category label + photo for each tile ----
+      // "span" controls the tile's size in the grid — leave as-is unless
+      // you want to change the layout.
+      galleryImages: [
+        { id: 0, cat: "Cave",      src: window.KC_IMAGES.gallery0, span: "col-span-8 row-span-2" },
+        { id: 1, cat: "Waterfall", src: window.KC_IMAGES.gallery1, span: "col-span-4" },
+        { id: 2, cat: "Trek",      src: window.KC_IMAGES.gallery2, span: "col-span-4" },
+        { id: 3, cat: "Camping",   src: window.KC_IMAGES.gallery3, span: "col-span-4" },
+        { id: 4, cat: "Drone",     src: window.KC_IMAGES.gallery4, span: "col-span-4" },
+        { id: 5, cat: "Cave",      src: window.KC_IMAGES.gallery5, span: "col-span-4" },
+        { id: 6, cat: "Waterfall", src: window.KC_IMAGES.gallery6, span: "col-span-8" },
+        { id: 7, cat: "Cave",      src: window.KC_IMAGES.gallery7, span: "col-span-4" },
+        { id: 8, cat: "Trek",      src: window.KC_IMAGES.gallery8, span: "col-span-4" },
+        { id: 9, cat: "Camping",   src: window.KC_IMAGES.gallery9, span: "col-span-4" }
+      ]
+    };
+  </script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="root"></div>
+  <!-- Main app (compiled React bundle) -->
+  <script type="module" src="app.js"></script>
+  <!-- Makes external links open safely in a new tab -->
+  <script src="safelinks.js"></script>
+  <!-- Content Editor: pencil-icon tap-to-edit tool for text/images/highlights -->
+  <script src="editor.js"></script>
+</body>
+</html>
