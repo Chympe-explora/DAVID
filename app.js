@@ -565,7 +565,7 @@
         h(
           "div", { className: "flex justify-between items-start" },
           h("h3", { className: "text-xl font-semibold" }, PKG.privatePackage.name),
-          h("div", { className: "text-right" }, h("div", { className: "text-xl font-bold" }, "From " + money(PRICES.privatePackage.guide)), h("div", { className: "text-[11px] text-white/50" }, PKG.privatePackage.priceUnit))
+          h("div", { className: "text-right" }, h("div", { className: "text-xl font-bold" }, "Customisable", h("div", { className: "text-[11px] text-white/50" }, PKG.privatePackage.priceUnit))
         ),
         h(
           "ul", { className: "mt-4 space-y-2 text-[13px] text-white/70" },
