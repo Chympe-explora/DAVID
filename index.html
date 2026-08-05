@@ -15,7 +15,7 @@
     window.KC_PRICES = {
       // ---- Shared Tour Package ----
       sharedTour: {
-        perPerson: 2500 // ₹ per paying person
+        perPerson: 2700 // ₹ per paying person
       },
 
       // ---- Guide Only Package ----
@@ -39,7 +39,7 @@
         ],
         // ---- Camping add-on (only charged if Camping = yes) ----
         campingTent: 1000,          // ₹ per tent
-        campingMealsPerPerson: 300, // ₹ per person — veg only, dinner + breakfast
+        campingMealsPerPerson: 500, // ₹ per person — veg only, dinner + breakfast
         overnightGuide: 1000        // ₹ per booking, mandatory once camping is chosen
       },
 
@@ -47,7 +47,7 @@
       camping: {
         tent: 1000,          // ₹ per tent
         tentCapacity: 2,     // persons per tent
-        mealsPerPerson: 300, // ₹ per person (if meals selected)
+        mealsPerPerson: 500, // ₹ per person (if meals selected)
         overnightGuide: 2000 // ₹ per booking, mandatory
       },
 
@@ -137,12 +137,12 @@
       // ---- Prices (in ₹) ----
       prices: {
         trek: 1500,          // shown as the "starting from" trek price
-        camping: 3500,       // shown as the "starting from" camping price
+        camping: 4500,       // shown as the "starting from" camping price
         guide: 1500,         // mandatory guide fee, charged on every booking
         campingBase: 2000,   // reserved, not currently charged
         vehicleRainy: 2000,  // 4x4 vehicle - Rainy Half Way option
         vehicleWinter: 4000, // 4x4 vehicle - Winter Full Way option
-        boat: 1000,          // reserved, not currently charged
+        boat: 800,          // reserved, not currently charged
         jacket: 100,         // reserved, not currently charged
         parking: 100,        // charged once per booking
         entry: 50             // charged per person
@@ -193,7 +193,7 @@
       trustBar: {
         trustedText: "Trusted by 1000+",
         travelersText: "Travelers",
-        googleRatingText: "Google Rating 4.9",
+        googleRatingText: "Visitors Rating 4.9",
         safetyCertifiedText: "Safety Certified",
         ecoTourismText: "Eco Tourism"
       },
@@ -222,7 +222,7 @@
             "Bamboo Rafting & 4×4 Off-Roading",
             "700m Cave Expedition + Torch & Life Jacket",
             "Chympe Falls swimming & cliff jumping",
-            "Lunch included • Children under {childFreeAge} free"
+            "Lunch included • Children under 10 is free"
           ]
         },
         camping: {
@@ -268,7 +268,6 @@
       sharedTourBooking: {
         includedTitle: "Included activities & lunch",
         includedText: "Bamboo Rafting • 4×4 Off-Roading • 700m Cave Expedition • Torch Light • Life Jacket • Registration & Entry Fee • Chympe Falls • Swimming & Cliff Jumping",
-        lunchText: "Lunch: White rice, dal, potato fry, pickle, papad, chicken (optional), salad, chutney, water bottle.",
         batchText: "One shared batch consists of 8 members. Advance booking must be completed at least 3 days before the tour. Booking is confirmed only after advance payment.",
         adultsLabel: "Adults",
         childrenLabel: "Children"
@@ -318,6 +317,7 @@
           "Swimming (cave & waterfall)",
           "Cliff jumping at Khaddum Fall",
           "Life jacket & torch",
+          "First aid & Safety kits",
           "Visit to Khaddum Fall (Chympe Fall)"
         ],
         adventureNote: "Note: If activities cannot be conducted due to weather or safety conditions, only the entry fee and life jacket fee will be charged.",
@@ -477,7 +477,7 @@
         statForestTrailLabel: "Forest Trail",
         statAverageTrekLabel: "Average Trek",
         statSpeciesLabel: "Species",
-        statGoogleRatingLabel: "Google Rating"
+        statGoogleRatingLabel: "Visitors Rating"
       }
     };
   </script>
