@@ -240,10 +240,10 @@
           name: "Camping Package",
           priceUnit: "Per Package",
           features: [
-            "1 Tent, sleeping mats, camping chairs, torch & a bonfire (worth ₹1,000)",
-            "Mandatory overnight guide {overnightGuide}",
-            "Meals {mealsPerPerson}/person available (veg dinner + breakfast)",
-            "Fresh bamboo-cooked dishes available"
+            "1 Tent, sleeping mats, camping chairs, torch & a bonfire",
+            "Mandatory overnight guide",
+            "Meals/person available (veg dinner + breakfast)",
+            "Fresh bamboo-cooked dishes available(Optional)"
           ]
         },
         guideOnly: {
@@ -260,7 +260,9 @@
           name: "Private Package",
           priceUnit: "Fully customizable • private group",
           features: [
-            "Optional 4×4 jeep, adventure activities & lunch thalis",
+            "Optional 4×4 jeep",
+            "Adventure activities",
+            "lunch thalis",
             "Mandatory local guide",
             "Add overnight camping with bamboo-cooked dishes"
           ]
@@ -270,7 +272,7 @@
       // ---- Gallery section ----
       galleryPage: {
         subtitle: "Moments from Krem Chympe",
-        filters: ["All", "Cave", "Waterfall", "Camping", "Trek", "Drone"],
+        filters: ["All", "Cave", "Waterfall", "Camping", "Trek", "Bamboo rafting"],
         viewAllLabel: " View All Photos"
       },
 
@@ -289,13 +291,16 @@
           "Basic First Aid"
         ],
         childFreeText: "Note: Children under {childFreeAge} are free of charge.",
-        batchText: "Note: One shared batch consists of 8 members. Advance booking must be completed at least 3 days before the tour. Booking is confirmed only after advance payment.",
+        batchText: "Note: One shared batch consists of 8 members",
+                          "Advance booking must be completed at least 3 days before the tour",
+                          "Booking is confirmed only after advance payment.",
         adultsLabel: "Adults",
         childrenLabel: "Children",
         lunchTitle: "Lunch (optional)",
         lunchPriceUnit: " Per Person",
         lunchSubtitle: "Select your thali(s) and choose the quantity for each.",
-        lunchIncludes: "Includes chutney and pickle. All thali variants are priced equally."
+        lunchIncludes: "Includes chutney and pickle",
+                        "All thali variants are priced equally."
       },
 
       // ---- Camping booking form text ----
@@ -313,14 +318,14 @@
         ],
         mealsLabelPrefix: "Meals (",
         mealsLabelSuffix: "/person)",
-        mealsIncludes: "Includes vegetarian dinner and breakfast with 2 servings of Maggi.",
-        mealsNote: "Note: Vegetarian meals only — no non-veg options available for camping meals.",
+        mealsIncludes: "Includes: vegetarian dinner and breakfast with 2 servings of Maggi.",
+        mealsNote: "Note: Vegetarian meals only.",
         mealsYes: "Yes",
         mealsNo: "No",
         guideTitle: "Overnight Guide",
-        guideNoteTemplate: "Note: An overnight guide ({overnightGuide} per booking) is mandatory for all camping bookings and covers guest safety and campsite supervision. Camping without a guide is not permitted. Children under {childFreeAge} are not charged for meals or activities.",
+        guideNoteTemplate: "Note: An overnight guide is mandatory for all camping bookings and covers guest safety and campsite supervision. Camping without a guide is not permitted. Children under {childFreeAge} are not charged for meals or activities.",
         guideMandatoryLabel: "yes (mandatory)",
-        bambooDishesTitle: " Traditional Bamboo Dishes"
+        bambooDishesTitle: " Traditional Bamboo Dishes(optional)"
       },
 
       // ---- Guide Only booking form text ----
@@ -403,7 +408,7 @@
         advanceHelperText: "Minimum advance ₹500 required",
         advanceNote: "Advance min ₹500 to confirm",
         submitWhatsappLabel: " Submit via WhatsApp",
-        receiptNoteTemplate: "After sending receipt on WhatsApp +91 {number} with all prefilled details, tap below to confirm."
+        receiptNoteTemplate: "After sending receipt on WhatsApp, tap below to confirm."
       },
 
       // ---- Homepage hero text ----
@@ -442,13 +447,13 @@
       // "span" controls the tile's size in the grid — leave as-is unless
       // you want to change the layout.
       galleryImages: [
-        { id: 0, cat: "Cave entrance",      src: window.KC_IMAGES.gallery0, span: "col-span-8 row-span-2" },
+        { id: 0, cat: "Cave",      src: window.KC_IMAGES.gallery0, span: "col-span-8 row-span-2" },
         { id: 1, cat: "Waterfall", src: window.KC_IMAGES.gallery1, span: "col-span-4" },
-        { id: 2, cat: "Trekking",      src: window.KC_IMAGES.gallery2, span: "col-span-4" },
+        { id: 2, cat: "Trek",      src: window.KC_IMAGES.gallery2, span: "col-span-4" },
         { id: 3, cat: "Camping",   src: window.KC_IMAGES.gallery3, span: "col-span-4" },
         { id: 4, cat: "Bamboo rafting",     src: window.KC_IMAGES.gallery4, span: "col-span-4" },
         { id: 5, cat: "Cave",      src: window.KC_IMAGES.gallery5, span: "col-span-4" },
-        { id: 6, cat: "Caving", src: window.KC_IMAGES.gallery6, span: "col-span-8" },
+        { id: 6, cat: "Cave", src: window.KC_IMAGES.gallery6, span: "col-span-8" },
         { id: 7, cat: "Rock formation",      src: window.KC_IMAGES.gallery7, span: "col-span-4" },
         { id: 8, cat: "Waterfall",      src: window.KC_IMAGES.gallery8, span: "col-span-4" },
         { id: 9, cat: "Camping",   src: window.KC_IMAGES.gallery9, span: "col-span-4" }
@@ -516,7 +521,7 @@
         statForestTrailLabel: "Forest Trail",
         statAverageTrekLabel: "Average Trek",
         statSpeciesLabel: "Species",
-        statGoogleRatingLabel: "Google Rating"
+        statGoogleRatingLabel: "Visitors Rating"
       }
     };
   </script>
