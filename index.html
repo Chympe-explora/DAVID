@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Krem Chympe — Adventure &amp; Camping</title>
+
+  <!--
+    PRICE SETTINGS — the single source of truth for every price on the
+    site. Nothing in app.js is hardcoded; every booking form, invoice,
+    summary, pricing card, checkout page, and confirmation page reads its
+    numbers from here. Change a number below and it updates everywhere.
+  -->
+  <script>
+    window.KC_PRICES = {
+      // ---- Shared Tour Package ----
+      sharedTour: {
+        perPerson: 2600,          // ₹ per paying person
+        lunchThaliPrice: 380,     // ₹ per thali — optional add-on (veg/chicken/pork same price)
+        thaliTypes: [
+          { id: "veg",     name: "Veg Thali" },
+          { id: "chicken", name: "Chicken Thali" },
+          { id: "pork",    name: "Pork Thali" }
+        ]
+      },
+
+      // ---- Guide Only Package ----
+      // NOTE: this package was removed from the site (replaced by the
+      // Private Package below) but the price is kept here in case you
+      // ever want to bring it back — it isn't read by app.js anymore.
+      guideOnly: {
+        flat: 1500 // ₹ per group, fixed — no add-ons, no customization
+      },
+
+      // ---- Private Package (custom group tour, optional camping) ----
+      privatePackage: {
+        jeep: 4000,               // ₹ per group — optional 4x4 jeep
+        guide: 1500,               // ₹ per group — mandatory local guide
+        adventurePerPerson: 1500,  // ₹ per person — optional adventure activities
+        lunchThaliPrice: 380,      // ₹ per thali (veg / chicken / pork all same price)
+        thaliTypes: [
+          { id: "veg",     name: "Veg Thali" },
+          { id: "chicken", name: "Chicken Thali" },
+          { id: "pork",    name: "Pork Thali" }
+        ],
+        // ---- Camping add-on (only charged if Camping = yes) ----
+        campingTent: 1000,          // ₹ per tent
+        campingMealsPerPerson: 380, // ₹ per person — veg only, dinner + breakfast
+        overnightGuide: 2000        // ₹ per booking, mandatory once camping is chosen
+      },
+
+      // ---- Camping ----
+      camping: {
+        tent: 4500,           // ₹ flat package price per booking — includes 1 tent,
+                               // sleeping mats, camping chairs, torch & a bonfire
+                               // (bonfire valued at ₹1,000). Not multiplied by tent count.
+        tentCapacity: 2,      // persons per tent
+        mealsPerPerson: 380,  // ₹ per person (optional add-on, veg dinner + breakfast)
+        overnightGuide: 2000  // ₹ per booking, mandatory — charged separately from
+                               // the package price above
+      },
+
+      // ---- Traditional Bamboo Dishes (Camping add-on menu) ----
+      bambooMenu: [
+        { id: "chicken500",   name: "Fresh Bamboo Chicken (500g)",     price: 699 },
+        { id: "chicken1kg",   name: "Fresh Bamboo Chicken (1kg)",      price: 890 },
+        { id: "pork500",      name: "Fresh Bamboo Pork (500g)",        price: 799 },
+        { id: "pork1kg",      name: "Fresh Bamboo Pork (1kg)",         price: 1000 },
+        { id: "porkbelly500", name: "Roasted Pork Belly Salad (500g)", price: 599 },
+        { id: "porkbelly1kg", name: "Roasted Pork Belly Salad (1kg)",  price: 900 },
+        { id: "fish",         name: "Boiled Fish (Zero Oil)",          price: 250 },
+        { id: "vegsabji",     name: "Veg Bamboo Sabji",                price: 300 },
+        { id: "egg",          name: "Boiled Egg",                     price: 20 },
+        { id: "chai",         name: "Bamboo Chai",                    price: 20 }
+      ],
+
+      // ---- Editable child free age — changing this updates every
+      // calculation that checks whether a child is charged. ----
+      childFreeAge: 10
+    };
+  </script>
+
+  <!--
+    IMAGES: edit the file names below to match whatever you upload next to
+    this page (repo root — no "images" folder needed). Every image on the
+    site is listed here — nothing else in the code needs to change.
+  -->
+  <script>
+    window.KC_IMAGES = {
+      // Rotating homepage background photos
+      heroBg1: "Blue watefall.jpg",
+      heroBg2: "Blue watefall.jpg",
+
+      // Section photos
+      // heroCave was still pointing at a missing "images/hero-cave.jpg" —
+      // set to "Cave entrance.jpg" for now. Change this to whichever photo
+      // you'd rather use for the cave hero section.
+      heroCave:    "Blue water cave.jpg",
+      trekCard:    "Trekking.jpg",
+      campingCard: "Camping un ex m.jpg",
+
+      // Guide photo and site logo
+      guide: "guide.jpg",
+      logo:  "logo.png",
+
+      // Gallery photos (id 0-9, matches the categories shown on the site)
+      gallery0: "Cave entrance.jpg",
+      gallery1: "Blue watefall.jpg",
+      gallery2: "Trekking.jpg",
+      gallery3: "Camping un ex m.jpg",
+      gallery4: "Rafting.jpg",
+      gallery5: "Cave diving.jpg",
+      gallery6: "Blue water cave.jpg",
+      gallery7: "Rock formations.jpg",
+      gallery8: "Happy waterfall.jpg",
+      gallery9: "Camping.jpg",
+
+      // Your UPI payment QR code image (shown on the Pricing / Pay page).
+      // Leave blank ("") to keep the plain text placeholder instead.
+      qrCode: ""
+    };
+  </script>
+
+  <!--
+    CONTENT: every word of text, price, and label used on the site lives
+    here. Change anything below and it updates on the site immediately —
+    no other file needs to be touched.
+  -->
+  <script>
+    window.KC_CONTENT = {
+      // ---- Site identity ----
+      siteName: "KREM CHYMPE",
+      siteSub: "ADVENTURE & CAMPING",
+
+      // ---- Contact & payment details ----
+      instagram: "https://www.instagram.com/unexplored_meghalaya?igsh=ZHZpODB3aXl0bXBu",
+      whatsappNumber: "916001877518",
+      upiId: "kremchympe@upi",
+      bank: {
+        name: "Krem Chympe Adventure",
+        account: "123456789012",
+        ifsc: "SBIN0001234",
+        bankName: "SBI, Cherrapunji Branch"
+      },
+
+      // ---- Prices (in ₹) ----
+      prices: {
+        trek: 1500,          // shown as the "starting from" trek price
+        camping: 3500,       // shown as the "starting from" camping price
+        guide: 1500,         // mandatory guide fee, charged on every booking
+        campingBase: 2000,   // reserved, not currently charged
+        vehicleRainy: 2000,  // 4x4 vehicle - Rainy Half Way option
+        vehicleWinter: 4000, // 4x4 vehicle - Winter Full Way option
+        boat: 1000,          // reserved, not currently charged
+        jacket: 100,         // reserved, not currently charged
+        parking: 100,        // charged once per booking
+        entry: 50             // charged per person
+      },
+
+      // ---- Meal options (shown with a quantity picker) ----
+      meals: [
+        { id: "bamboo_pork",  name: "Bamboo Pork",   price: 300, type: "non-veg" },
+        { id: "chicken_curry",name: "Chicken Curry", price: 250, type: "non-veg" },
+        { id: "maggie",       name: "Maggie",         price: 80, type: "veg" },
+        { id: "tea",          name: "Red Tea",        price: 30, type: "veg" },
+        { id: "rice",         name: "Steamed Rice",  price: 120, type: "veg" },
+        { id: "salad",        name: "Local Salad",    price: 60, type: "veg" },
+        { id: "pork_fry",     name: "Pork Fry",      price: 320, type: "non-veg" },
+        { id: "egg_curry",    name: "Egg Curry",     price: 150, type: "non-veg" }
+      ],
+
+      // ---- Camping gear options (shown only for Camping bookings) ----
+      campingItems: [
+        { id: "tent",    name: "Tent (2 Person)",    price: 500 },
+        { id: "torch",   name: "Torch + Batteries",   price: 50 },
+        { id: "blanket", name: "Sleeping Blanket",   price: 100 },
+        { id: "mat",     name: "Sleeping Mat",        price: 50 }
+      ],
+
+      // ---- On/off switches for whole sections. Set any of these to
+      // false to remove that section from the site — no other file
+      // needs to be touched. ----
+      sections: {
+        trustBar: true,       // the "Trusted by 1000+ Travelers / Google Rating..." bar under the hero
+        ourStory: true,       // the "Our Story" timeline block
+        statsRow: true,       // the 12KM / 2 Hour / 100+ / 4.9 stat tiles
+        meetGuide: true,      // the "Meet Your Guide" card
+        sharedTourCard: true, // the "Shared Tour" package card
+        campingCard: true,    // the "Camping Experience" package card
+        privatePackageCard: true, // the "Private Package" package card
+        packagesTrustRow: true, // "Safe & Secure / Local Guides / Eco Friendly / 4.9 Rating" strip
+        gallery: true         // the whole "Our Gallery" block
+      },
+
+      // ---- Navigation menu labels (top bar + mobile menu) ----
+      nav: {
+        items: ["Home", "Explore", "Packages", "Gallery", "Booking", "Contact"],
+        mobileItems: ["Home", "Packages", "Gallery"]
+      },
+
+      // ---- "Trusted by..." strip under the hero ----
+      trustBar: {
+        trustedText: "Trusted by 1000+",
+        travelersText: "Travelers",
+        googleRatingText: "Google Rating 4.9",
+        safetyCertifiedText: "Safety Certified",
+        ecoTourismText: "Eco Tourism"
+      },
+
+      // ---- "Our Story" timeline entries ----
+      storyTimeline: [
+        { year: "1990", title: "Cave Discovery", desc: "Local hunters discovered the massive cave system while tracking in the dense forests." },
+        { year: "2015", title: "Tourism Began", desc: "Opened for eco-tourism with strict conservation guidelines and local community involvement." },
+        { year: "2018", title: "Local Guides", desc: "Trained 25+ local guides from nearby villages, creating sustainable livelihoods." },
+        { year: "Today", title: "Conservation", desc: "Protecting 12km trail, 100+ species, with zero-plastic and leave-no-trace policy." }
+      ],
+
+      // ---- Packages page header + trust strip ----
+      packagesPage: {
+        subtitle: "Choose your perfect adventure • 3 curated experiences",
+        trustRow: ["Safe & Secure", "Local Guides", "Eco Friendly", "4.9 Rating"]
+      },
+
+      // ---- Package cards (Shared Tour / Camping / Guide Only) ----
+      packages: {
+        sharedTour: {
+          badge: "Most Popular",
+          name: "Shared Tour",
+          priceUnit: "Per Paying Person",
+          features: [
+            "4×4 Vehicle Pickup & Drop",
+            "Chympe Waterfall Visit & Swimming",
+            "700m Cave Exploration & Boat Rafting",
+            "Entry Fee, Life Jacket & Basic First Aid • Lunch thali optional (₹380/person) • Children under {childFreeAge} free"
+          ]
+        },
+        camping: {
+          badge: "Overnight",
+          name: "Camping Experience",
+          priceUnit: "Per Package",
+          features: [
+            "1 Tent, sleeping mats, camping chairs, torch & a bonfire (worth ₹1,000)",
+            "Mandatory overnight guide {overnightGuide}",
+            "Meals {mealsPerPerson}/person available (veg dinner + breakfast)",
+            "Fresh bamboo-cooked dishes available"
+          ]
+        },
+        guideOnly: {
+          badge: "Guide Only",
+          name: "Guide Only",
+          priceUnit: "Per Group",
+          features: [
+            "Certified local guide (mandatory)",
+            "Basic first aid kit included"
+          ]
+        },
+        privatePackage: {
+          badge: "Private Tour",
+          name: "Private Package",
+          priceUnit: "Fully customizable • private group",
+          features: [
+            "Optional 4×4 jeep, adventure activities & lunch thalis",
+            "Mandatory local guide",
+            "Add overnight camping with bamboo-cooked dishes"
+          ]
+        }
+      },
+
+      // ---- Gallery section ----
+      galleryPage: {
+        subtitle: "Moments from Krem Chympe",
+        filters: ["All", "Cave", "Waterfall", "Camping", "Trek", "Drone"],
+        viewAllLabel: " View All Photos"
+      },
+
+      // ---- Shared Tour booking form text ----
+      sharedTourBooking: {
+        includedTitle: "Included in your package",
+        includedText: "4×4 Vehicle Pickup & Drop • Chympe Waterfall Visit • Swimming • 700m Cave Exploration • Boat Rafting • Entry Fee • Life Jacket • Basic First Aid",
+        childFreeText: "Children under {childFreeAge} are free of charge.",
+        batchText: "One shared batch consists of 8 members. Advance booking must be completed at least 3 days before the tour. Booking is confirmed only after advance payment.",
+        adultsLabel: "Adults",
+        childrenLabel: "Children",
+        lunchTitle: "Lunch (optional)",
+        lunchPriceUnit: " Per Person",
+        lunchSubtitle: "Select your thali(s) and choose the quantity for each.",
+        lunchIncludes: "Includes chutney and pickle. All thali variants are priced equally."
+      },
+
+      // ---- Camping booking form text ----
+      campingBooking: {
+        adultsLabel: "Adults",
+        childrenLabel: "Children",
+        packageIncludesTitle: "Your ₹4,500 package includes",
+        packageIncludesText: "1 Tent (2 persons), sleeping mats, camping chairs, torch & a bonfire (worth ₹1,000).",
+        mealsLabelPrefix: "Meals (",
+        mealsLabelSuffix: "/person)",
+        mealsIncludes: "Includes vegetarian dinner and breakfast with 2 servings of Maggi.",
+        mealsYes: "Yes",
+        mealsNo: "No",
+        guideTitle: "Overnight Guide",
+        guideNoteTemplate: "An overnight guide ({overnightGuide} per booking) is mandatory for all camping bookings and covers guest safety and campsite supervision. Camping without a guide is not permitted. Children under {childFreeAge} are not charged for meals or activities.",
+        guideMandatoryLabel: "yes (mandatory)",
+        bambooDishesTitle: " Traditional Bamboo Dishes"
+      },
+
+      // ---- Guide Only booking form text ----
+      guideOnlyBooking: {
+        noteTemplate: "This package is a fixed {price} per group — a certified local guide with a basic first aid kit. No customization needed."
+      },
+
+      // ---- Private Package booking form text ----
+      privatePackageBooking: {
+        peopleLabel: "Number of People",
+
+        jeepTitle: "4×4 Jeep",
+        jeepPriceUnit: " Per Group",
+        jeepNote1: "Note: Without the 4×4 jeep, the trekking distance is approximately 20 km (round trip).",
+        jeepNote2: "Note: The 4x4 jeep is charged per group, not per person.",
+        jeepYesLabel: "yes",
+        jeepNoLabel: "No",
+
+        guideTitle: "Local Guide",
+        guideNote1: "Note: A local guide is mandatory for all visitors, as this is an offbeat destination. The guide ensures your safety throughout the adventure activities.",
+        guideNote2: "Note: The local guide is charged per group, not per person.",
+        guideMandatoryLabel: "yes (mandatory)",
+
+        adventureTitle: "Adventure Activities",
+        adventurePriceUnit: " Per Person",
+        adventureIncludesLabel: "Includes:",
+        adventureIncludes: [
+          "Boat rafting",
+          "700m cave exploration",
+          "Waterfall visit",
+          "Waterfall swimming",
+          "Life jacket",
+          "Entry fees",
+          "Basic first aid"
+        ],
+        adventureNote: "Note: If activities cannot be conducted due to weather or safety conditions, only the entry fee and life jacket fee will be charged.",
+        adventureYesLabel: "yes",
+        adventureNoLabel: "No",
+
+        lunchTitle: "Lunch",
+        lunchPriceUnit: " Per Person",
+        lunchSubtitle: "Select your thali(s) and choose the quantity for each.",
+        lunchIncludes: "Includes chutney and pickle. All thali variants are priced equally.",
+        lunchEachSuffix: " each",
+
+        campingTitle: "Camping",
+        campingYesLabel: "yes",
+        campingNoLabel: "No",
+
+        campingDetailsTitle: "Camping Details",
+        campingDetailsSubtitle: "Please fill in the details below to book your camping experience.",
+
+        tentTitle: "Camping Tent Rental",
+        tentPriceUnit: " Per Tent",
+        tentIncludes: "Includes: Blanket, Pillows, Camping chairs.",
+        tentNote: "Note: One tent can comfortably accommodate 2 people.",
+        tentsLabel: "Number of tents",
+
+        campingMealsTitle: "Meals",
+        campingMealsPriceUnit: " Per Person",
+        campingMealsIncludes: "Includes — Dinner: Veg Thali, Breakfast: 2 servings of Maggi.",
+        campingMealsNote: "Note: Vegetarian meals only.",
+        campingMealsYesLabel: "yes",
+        campingMealsNoLabel: "No",
+
+        overnightGuideTitle: "Overnight Guide",
+        overnightGuideNote: "Important Note: An overnight guide is mandatory for all camping bookings, as the campsite is located far from the nearest village. For your safety and assistance, camping without a guide is not permitted. The guide will also prepare your dinner and breakfast.",
+        overnightGuideMandatoryLabel: "yes (mandatory)",
+
+        bambooDishesTitle: " Traditional Bamboo Dishes (Zero Oil)",
+        bambooDishesDesc: "Available only with camping, as it requires extra preparation time and fresh ingredients."
+      },
+
+      // ---- Payment page text ----
+      payment: {
+        accountNameLabel: "Account Name",
+        accountNumberLabel: "Account Number",
+        ifscLabel: "IFSC",
+        bankLabel: "Bank",
+        advanceHelperText: "Minimum advance ₹500 required",
+        advanceNote: "Advance min ₹500 to confirm",
+        submitWhatsappLabel: " Submit via WhatsApp",
+        receiptNoteTemplate: "After sending receipt on WhatsApp +91 {number} with all prefilled details, tap below to confirm."
+      },
+
+      // ---- Homepage hero text ----
+      hero: {
+        badge: "MEGHALAYA-CHYMPE FALL-CAVE ADVENTURE",
+        title: "Discover Meghalaya's Hidden Paradise",
+        sub: "Embark on an unforgettable journey through Krem Chympe, one of India's longest cave systems with 20 km explored length wise it nestled in the heart of Meghalaya's mystical forests.",
+        visitorsLabel: "Visitors",
+        duration: "2 Hours Trek",
+        priceLabel: "Starts ₹1500 Per Guide"
+      },
+
+      // Homepage rotating background photos (file names come from KC_IMAGES above)
+      backgrounds: [window.KC_IMAGES.heroBg1, window.KC_IMAGES.heroBg2],
+
+      // ---- Guide bio ----
+      guide: {
+        name: "David Tariang",
+        role: "Lead Guide & Conservationist",
+        bio: "Born in the hills of Meghalaya, David is a local and he has explored Krem Chympe cave and chympe waterfall since childhood. He is a certified caver and guide.",
+        image: window.KC_IMAGES.guide
+      },
+
+      logoImage: window.KC_IMAGES.logo,
+
+      // Section photos (file names come from KC_IMAGES above)
+      sectionImages: {
+        heroCave: window.KC_IMAGES.heroCave,
+        trekCard: window.KC_IMAGES.trekCard,
+        campingCard: window.KC_IMAGES.campingCard
+      },
+
+      // ---- Gallery: category label + photo for each tile ----
+      // "span" controls the tile's size in the grid — leave as-is unless
+      // you want to change the layout.
+      galleryImages: [
+        { id: 0, cat: "Cave entrance",      src: window.KC_IMAGES.gallery0, span: "col-span-8 row-span-2" },
+        { id: 1, cat: "Waterfall", src: window.KC_IMAGES.gallery1, span: "col-span-4" },
+        { id: 2, cat: "Trekking",      src: window.KC_IMAGES.gallery2, span: "col-span-4" },
+        { id: 3, cat: "Camping",   src: window.KC_IMAGES.gallery3, span: "col-span-4" },
+        { id: 4, cat: "Bamboo rafting",     src: window.KC_IMAGES.gallery4, span: "col-span-4" },
+        { id: 5, cat: "Cave",      src: window.KC_IMAGES.gallery5, span: "col-span-4" },
+        { id: 6, cat: "Caving", src: window.KC_IMAGES.gallery6, span: "col-span-8" },
+        { id: 7, cat: "Rock formation",      src: window.KC_IMAGES.gallery7, span: "col-span-4" },
+        { id: 8, cat: "Waterfall",      src: window.KC_IMAGES.gallery8, span: "col-span-4" },
+        { id: 9, cat: "Camping",   src: window.KC_IMAGES.gallery9, span: "col-span-4" }
+      ],
+
+      // ---- Fixed interface words (button labels, headings, form labels) ----
+      // These used to be hard-coded inside the app itself. Now every one of
+      // them reads from here first, so you can reword any of them the same
+      // way as everything else above — change the text, save, refresh.
+      ui: {
+        bookNow: "Book Now",
+        payNow: "Pay Now",
+        next: "Next ",
+        nextViewPricing: "Next — View Pricing ",
+        back: " Back",
+        backToHome: "Back to Home",
+
+        fullName: "Full Name",
+        whatsappNumberLabel: "WhatsApp Number",
+        numberOfPeople: "Number of People",
+        dateLabel: "Date",
+        peopleLabel: "People",
+        packageLabel: "Package",
+        totalLabel: "Total",
+
+        guideMandatory: "Guide Mandatory",
+        vehicleLabel: "4x4 Vehicle",
+        campingGear: " Camping Gear",
+        mealOptions: " Meal Options",
+        noVehicleLabel: "No Vehicle",
+        freeWalkLabel: "Free / Walk",
+        rainyHalfWayLabel: "Rainy Half Way",
+        winterFullWayLabel: "Winter Full Way",
+
+        visitors: " Visitors",
+        duration: " Duration",
+        price: " Price",
+        visitorRange: "1 - 5 People",
+
+        paymentOptionsTitle: "Payment Options",
+        orderSummary: "Order Summary",
+        qrScannerLabel: "QR Scanner",
+        upiIdLabel: "UPI ID",
+        bankTransferLabel: "Bank Transfer",
+        scanToPayLabel: "Scan to Pay ₹",
+        downloadQr: " Download QR",
+        advancePaymentLabel: "Advance Payment (Min ₹500)",
+        balanceLeftLabel: "Balance left to pay on arrival: ₹",
+        confirmReceiptButton: "I have sent receipt — Confirm Booking",
+
+        bookingConfirmedTitle: "Booking Confirmed!",
+        thankYouPrefix: "Thank you ",
+        thankYouMiddle: "! Your adventure is secured. We have received advance ₹",
+        thankYouBalanceMid: ". Balance ₹",
+        thankYouSuffix: " to be paid on arrival.",
+
+        ourStory: "Our Story",
+        meetYourGuide: "Meet Your Guide",
+        ourGallery: "Our Gallery",
+        ourAdventurePackages: "Our Adventure Packages",
+        pricingFacilities: "Pricing & Facilities",
+        totalCalculator: "Total Calculator",
+        totalAmount: "Total Amount",
+
+        statForestTrailLabel: "Forest Trail",
+        statAverageTrekLabel: "Average Trek",
+        statSpeciesLabel: "Species",
+        statGoogleRatingLabel: "Google Rating"
+      }
+    };
+  </script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="root"></div>
+  <!-- React 18 (UMD builds, loaded from cdnjs so no build step is needed) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+  <!-- Main app -->
+  <script src="app.js"></script>
+  <!-- Makes external links open safely in a new tab -->
+  <script src="safelinks.js"></script>
+  <!-- Content Editor: pencil-icon tap-to-edit tool for text/images/highlights -->
+  <script src="editor.js"></script>
+</body>
+</html>
